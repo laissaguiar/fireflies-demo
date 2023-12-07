@@ -110,22 +110,27 @@ const Menu = () => {
       onKeyDown={toggleDrawer(anchor, false)}
     >
       <List>
-        {["Menu", "Films", "My Reviews", "Drafts"].map((text, index) => (
+        {["Página inicial"].map((text, index) => (
           <ListItem key={text} disablePadding>
             <ListItemButton>
               <ListItemIcon>
                 {/* {index % 2 === 0 ? <InboxIcon /> : <MailIcon />} */}
               </ListItemIcon>
-              <ListItemText primary={text} />
+              <ListItemText
+                primary={text}
+                onClick={() => {
+                  router.push("/home");
+                }}
+              />
             </ListItemButton>
           </ListItem>
         ))}
       </List>
       <Divider />
       <List>
-        {["Sign Out"].map((text, index) => (
+        {["Sair"].map((text, index) => (
           <ListItem key={text} disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={() => router.push("/")}>
               <ListItemIcon>
                 {/* {index % 2 === 0 ? <InboxIcon /> : <MailIcon />} */}
               </ListItemIcon>

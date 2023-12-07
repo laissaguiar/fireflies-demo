@@ -25,10 +25,17 @@ const User = mongoose.model("User", {
   profile_image_url: String,
 });
 
+const Review = mongoose.model("Review", {
+  comment: String,
+  rating: Number,
+  user_id: mongoose.Types.ObjectId,
+  film_id: mongoose.Types.ObjectId,
+});
+
 app.get("/film", async (req, res) => {
   const films = await Film.find();
 
-  res.send(films);
+  res.send({ status: "success", data: films });
 });
 
 app.post("/film", async (req, res) => {
@@ -49,12 +56,11 @@ app.post("/user", async (req, res) => {
     name: req.body.name,
     username: req.body.username,
     password: req.body.password,
-    profile_image_url: req.body.profile_image_url,
   });
 
   await user.save();
 
-  res.send(user);
+  res.send({ status: "success", data: user });
 });
 
 app.get("/user", async (req, res) => {
@@ -73,6 +79,30 @@ app.post("/login", async (req, res) => {
       .status(200)
       .send({ status: "error", message: "Senha ou usuário incorretos." });
   }
+});
+
+app.post("/review", async (req, res) => {
+  const userId = new mongoose.Types.ObjectId(req.body.user_id);
+  const filmId = new mongoose.Types.ObjectId(req.body.film_id);
+
+  const review = new Review({
+    comment: req.body.comment,
+    rating: req.body.rating,
+    user_id: userId,
+    film_id: filmId,
+  });
+
+  await review.save();
+
+  res.send({ status: "success", data: review });
+});
+
+app.get("/review", async (req, res) => {
+  const userId = new mongoose.Types.ObjectId(req.query.user_id);
+
+  const review = await Review.find({ user_id: userId });
+
+  res.send({ status: "success", data: review });
 });
 
 app.listen(port, () => {

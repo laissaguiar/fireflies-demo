@@ -15,17 +15,21 @@ import CustomButton from "@/components/atoms/CustomButton";
 import { theme } from "./theme";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { ThemeProvider } from "@mui/material/styles";
-
-const baseURL = "http://localhost:3000/login";
+import { baseURL } from "@/api";
+import { useGlobalStore } from "@/globalStore";
 
 export default function Home() {
   const router = useRouter();
   const [value, setValue] = React.useState(0);
   const [name, setName] = React.useState("");
+  const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [errorMessage, setErrorMessage] = React.useState("");
+  const [successMessage, setSuccessMessage] = React.useState("");
   const [open, setOpen] = React.useState(false);
+  const [openSuccess, setOpenSuccess] = React.useState(false);
+
+  const { setUserId, setUserName } = useGlobalStore();
 
   const handleClick = () => {
     setOpen(true);
@@ -48,30 +52,47 @@ export default function Home() {
 
   const handleLogin = () => {
     axios
-      .post(baseURL, {
-        username: name,
+      .post(baseURL + "/login", {
+        username: username,
         password: password,
       })
       .then((response) => {
-        console.log(response);
-        // setOpen(true);
         if (response.data.status === "success") {
+          setUserId(response.data.data._id);
           router.push("/home");
         } else {
           setOpen(true);
           setErrorMessage(response.data.message);
         }
-
-        // if (response.status === 406) {
-        //   setOpen(true);
-        //   setErrorMessage(response.data.error);
-        // }
       })
       .catch((err) => {
-        console.log("salve");
         setOpen(true);
-        // setOpen(true);
-        // setErrorMessage(err.error);
+        setErrorMessage("Erro");
+      });
+  };
+
+  const handleSignUp = () => {
+    axios
+      .post(baseURL + "/user", {
+        name: name,
+        username: name,
+        password: password,
+      })
+      .then((response) => {
+        if (response.data.status === "success") {
+          setUserName(response.data.data.name);
+          setUserId(response.data.data._id);
+          setOpenSuccess(true);
+          setSuccessMessage("Conta criada com sucesso!");
+          router.push("/home");
+        } else {
+          setOpen(true);
+          setErrorMessage(response.data.message);
+        }
+      })
+      .catch((err) => {
+        setOpen(true);
+        setErrorMessage("Erro");
       });
   };
 
@@ -157,7 +178,7 @@ export default function Home() {
                       borderRadius: 20,
                     },
                   }}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => setUsername(e.target.value)}
                   fullWidth
                   id="outlined-basic"
                   label="Login"
@@ -166,6 +187,7 @@ export default function Home() {
               </Grid>
               <Grid item xs={12}>
                 <TextField
+                  type="password"
                   size="small"
                   fullWidth
                   id="outlined-basic"
@@ -206,6 +228,7 @@ export default function Home() {
                       borderRadius: 20,
                     },
                   }}
+                  onChange={(e) => setName(e.target.value)}
                   fullWidth
                   id="outlined-basic"
                   label="Name"
@@ -216,23 +239,24 @@ export default function Home() {
                 <TextField
                   fullWidth
                   id="outlined-basic"
+                  onChange={(e) => setUsername(e.target.value)}
                   label="Login"
                   variant="standard"
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField
+                  type="password"
                   fullWidth
                   id="outlined-basic"
+                  onChange={(e) => setPassword(e.target.value)}
                   label="Password"
                   variant="standard"
                 />
               </Grid>
               <Grid item xs={12} display="flex" justifyContent="center">
                 <CustomButton
-                  onClick={() => {
-                    router.push("/home");
-                  }}
+                  onClick={handleSignUp}
                   title="Sign up"
                   variant="contained"
                   sx={{
@@ -247,6 +271,19 @@ export default function Home() {
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
           {errorMessage}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={openSuccess}
+        autoHideDuration={6000}
+        onClose={() => setOpenSuccess(false)}
+      >
+        <Alert
+          onClose={() => setOpenSuccess(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {successMessage}
         </Alert>
       </Snackbar>
     </Grid>
